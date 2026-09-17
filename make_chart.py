@@ -11,7 +11,7 @@ from pathlib import Path
 import matplotlib
 
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402  (must follow use("Agg"))
+import matplotlib.pyplot as plt
 
 AXES = ["Who", "When", "What", "All"]
 JEV = {"Who": 73.4, "When": 76.4, "What": 23.7, "All": 31.3}
