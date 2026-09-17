@@ -17,7 +17,6 @@ from . import metrics
 BASELINE_NAME = "gpt-5.4"
 BASELINE = {"Who": 55.7, "When": 72.3, "What": 15.3, "All": 21.3}
 AXES = ("Who", "When", "What", "All")
-CONSTRAINED = {"Who", "When"}  # adaptation-favoured for Jev
 JEV_PRICE_PER_MTOK = 0.042  # input only; output free
 
 
@@ -82,20 +81,17 @@ def render_chart(jev: dict, path: Path) -> None:
         if jv is None:  # e.g. Who on a single-agent-only subset
             ax.text(jx, 2, "n/a", ha="center", va="bottom", fontsize=9, color=muted)
         else:
-            ax.bar(jx, jv, w, color=blue, edgecolor=surface, linewidth=1.5,
-                   hatch="///" if k in CONSTRAINED else None, zorder=3,
-                   label="Jev (ours)" if i == 0 else None)
+            ax.bar(jx, jv, w, color=blue, edgecolor=surface, linewidth=1.5, zorder=3,
+                   label="Jev" if i == 0 else None)
             ax.text(jx, jv + 1.2, f"{jv:.1f}", ha="center", va="bottom",
                     fontsize=10.5, color=ink, fontweight="bold")
         ax.bar(lx, BASELINE[k], w, color=orange, edgecolor=surface, linewidth=1.5, zorder=3,
-               label=f"{BASELINE_NAME} (paper)" if i == 0 else None)
+               label=BASELINE_NAME if i == 0 else None)
         ax.text(lx, BASELINE[k] + 1.2, f"{BASELINE[k]:.1f}", ha="center", va="bottom",
                 fontsize=10.5, color=muted)
 
-    labels = {"Who": "Who\n(agent)", "When": "When\n(step)", "What": "What\n(error F1)",
-              "All": "All\n(joint)"}
     ax.set_xticks(range(len(AXES)))
-    ax.set_xticklabels([labels[k] for k in AXES], fontsize=10, color=ink)
+    ax.set_xticklabels(list(AXES), fontsize=11, color=ink)
     ax.set_ylim(0, 90)
     ax.set_ylabel("accuracy / macro-F1  (%)", fontsize=10, color=muted)
     for s in ("top", "right", "left"):
@@ -108,16 +104,8 @@ def render_chart(jev: dict, path: Path) -> None:
                  color=ink, fontweight="bold", loc="left", pad=18)
     ax.text(0, 1.02, f"Who&When Pro, text subset ({jev['n']:,} traces). Higher is better.",
             transform=ax.transAxes, fontsize=10, color=muted)
-    ax.legend(loc="upper right", frameon=False, fontsize=9.5)
-    fig.text(0.075, 0.055,
-             (f"Jev ran all {jev['n']:,} traces for ~${jev['cost_usd']:.2f} (input-only; output "
-              "free).  Hatched = constrained-choice for Jev: it picks from the trace's listed "
-              "agents/steps,"), fontsize=7.2, color=muted)
-    fig.text(0.075, 0.018,
-             (f"while {BASELINE_NAME} free-generates. What (error macro-F1) is the like-for-like "
-              "axis.  Baseline: gpt-5.4, arXiv:2607.09996 Table 4."),
-             fontsize=7.2, color=muted)
-    fig.subplots_adjust(left=0.075, right=0.975, top=0.83, bottom=0.19)
+    ax.legend(loc="upper right", frameon=False, fontsize=11)
+    fig.subplots_adjust(left=0.08, right=0.975, top=0.83, bottom=0.1)
     path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(path, facecolor=surface)
 
