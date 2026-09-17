@@ -1,0 +1,74 @@
+{
+  "n_sample": 100,
+  "n_routed_ok": 100,
+  "n_failed": 0,
+  "completion_rate": 1.0,
+  "failed_ids": [],
+  "routed": {
+    "acc": 0.6154481778732558,
+    "cost_usd": 0.00016895693333333334,
+    "latency_ms": 2509.9677681333287
+  },
+  "fixed": {
+    "haiku": {
+      "acc": 0.47910477571195925,
+      "cost_usd": 0.00017217,
+      "latency_ms": 1705.2444719833222,
+      "real_id": "claude-3-haiku-20240307"
+    },
+    "30b": {
+      "acc": 0.6031893657958733,
+      "cost_usd": 0.00022294266666666668,
+      "latency_ms": 13486.56810686001,
+      "real_id": "qwen3-30b-a3b-instruct-2507"
+    },
+    "80b": {
+      "acc": 0.6054481778732558,
+      "cost_usd": 0.00013091583333333333,
+      "latency_ms": 2479.586891716664,
+      "real_id": "qwen3-next-80b-a3b-instruct"
+    },
+    "235b": {
+      "acc": 0.6641330198087526,
+      "cost_usd": 2.952795e-05,
+      "latency_ms": 18046.17866242659,
+      "real_id": "qwen3-235b-a22b-2507"
+    },
+    "coder-next": {
+      "acc": 0.5999174747500455,
+      "cost_usd": 0.000300901,
+      "latency_ms": 6498.570020863342,
+      "real_id": "qwen3-coder-next"
+    },
+    "gemini-flash": {
+      "acc": 0.6430611441981349,
+      "cost_usd": 0.002999239,
+      "latency_ms": 5814.192839146669,
+      "real_id": "gemini-2.5-flash"
+    }
+  },
+  "always_cheapest": {
+    "model": "235b",
+    "acc": 0.6641330198087526,
+    "cost_usd": 2.952795e-05,
+    "latency_ms": 18046.17866242659,
+    "real_id": "qwen3-235b-a22b-2507"
+  },
+  "best_fixed_hindsight": {
+    "model": "235b",
+    "acc": 0.6641330198087526,
+    "cost_usd": 2.952795e-05,
+    "latency_ms": 18046.17866242659,
+    "real_id": "qwen3-235b-a22b-2507"
+  },
+  "oracle_ceiling_acc": 0.8127336052687109,
+  "selection_distribution": {
+    "80b": 98,
+    "gemini-flash": 2
+  },
+  "gliclass_api_latency_s": {
+    "median": 1.7,
+    "n": 100
+  },
+  "notes": "Costs/latencies are RouterArena reported per-model figures, not measured GLiClass calls. GLiClass is a zero-shot classifier, not Jev/OpenJev."
+}

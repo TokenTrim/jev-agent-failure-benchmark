@@ -19,6 +19,7 @@ dependencies = [
 [project.optional-dependencies]
 viz = ["matplotlib>=3.8"]
 dev = ["pytest>=8", "ruff>=0.6"]
+pilots = ["gradio_client>=1.0"]
 
 [project.scripts]
 jevbench = "jevbench.cli:main"

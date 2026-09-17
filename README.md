@@ -113,6 +113,15 @@ Liu, Xi, Zhang, Zeng, Yue, Wang, Kang, Wu, Wang, *"Who&When Pro: Can LLMs Really
 Attribute Failures in AI Agents?"*, arXiv:2607.09996 (2026). Harness:
 [whowhenpro/whowhen_pro](https://github.com/whowhenpro/whowhen_pro).
 
+## Pilots
+
+Side experiments live under `pilots/`:
+
+- [`pilots/gliclass-routerarena`](pilots/gliclass-routerarena) — a small pilot
+  using the hosted GLiClass zero-shot classifier as an LLM router on RouterArena.
+  Result on a 100-example sample: the router collapsed to one model and did not
+  beat the best fixed model (61.5% vs 66.4%). Not a leaderboard result; not Jev.
+
 ## License
 
 Code: Apache-2.0 (see `LICENSE`). The dataset keeps its own CC-BY-4.0 license and
