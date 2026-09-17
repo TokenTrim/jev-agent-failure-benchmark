@@ -1,0 +1,27 @@
+# Secrets — never commit
+.env
+.env.local
+*.key
+.keys/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+
+# Dataset (download locally, do not redistribute)
+data/
+*.parquet
+*.arrow
+
+# Run outputs that are not curated results
+results/raw/
+results/**/predictions.jsonl
+results/**/failures.jsonl
+.DS_Store

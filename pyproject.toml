@@ -1,0 +1,37 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "jevbench"
+version = "0.1.0"
+description = "Benchmark Jev against a strong LLM on the Who&When Pro failure-attribution task"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+dependencies = [
+    # Official Who&When Pro harness, pinned. Brings litellm, pyyaml, pillow.
+    "whowhen-eval @ git+https://github.com/whowhenpro/whowhen_pro@14369dcb079c7cdf86ed2924145d5a28ff5c73b2",
+    "httpx>=0.27",
+    "numpy>=1.26",
+]
+
+[project.optional-dependencies]
+viz = ["matplotlib>=3.8"]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+jevbench = "jevbench.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/jevbench"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
