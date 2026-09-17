@@ -1,12 +1,9 @@
 #!/usr/bin/env sh
-# Reproduce the benchmark. Canonical settings live here.
+# Reproduce the benchmark end to end. Needs TYPESAFE_API_KEY in the environment.
 set -eu
 
 SEED=20240517
-N=300
-LLM_MODEL=${LLM_MODEL:-gpt-5.6-terra}
-JEV_MODEL=${JEV_MODEL:-jev-1.13.0}
-RUN_DIR=results/run
+N=6257                       # whole text subset; use a smaller N for a subset
 REV=0bd196c8a040841c4ae167ab33cc8151de246f1f
 
 # 1. Dataset (pinned revision), if not already present.
@@ -16,16 +13,8 @@ if [ ! -f data/text.jsonl ]; then
   curl -L "https://huggingface.co/datasets/Leoxx/whowhen_pro/resolve/$REV/taxonomy.yaml" -o data/taxonomy.yaml
 fi
 
-# 2. Fixed-seed, framework-stratified sample.
-jevbench sample --n "$N" --seed "$SEED" --out "$RUN_DIR/sample.json"
-
-# 3. Offline cost estimate (no API calls).
-jevbench estimate --sample "$RUN_DIR/sample.json" --llm-model "$LLM_MODEL"
-
-# 4. Both backends (resumable). Needs TYPESAFE_API_KEY and the baseline's key.
-jevbench --run-dir "$RUN_DIR" run --sample "$RUN_DIR/sample.json" \
-  --backend jev --backend llm --jev-model "$JEV_MODEL" --llm-model "$LLM_MODEL" --concurrency 8
-
-# 5. Report + chart.
-jevbench --run-dir "$RUN_DIR" report --llm-model "$LLM_MODEL" --jev-model "$JEV_MODEL" \
-  --chart "$RUN_DIR/chart.png"
+# 2. Fixed-seed sample, offline cost estimate, Jev run, report.
+jevbench sample --n "$N" --seed "$SEED" --out results/run/sample.json
+jevbench estimate --sample results/run/sample.json
+jevbench run --sample results/run/sample.json --concurrency 16
+jevbench report

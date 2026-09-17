@@ -10,14 +10,14 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "Apache-2.0" }
 dependencies = [
-    # Official Who&When Pro harness, pinned. Brings litellm, pyyaml, pillow.
+    # Official Who&When Pro harness, pinned: its renderers, parser and scorer.
     "whowhen-eval @ git+https://github.com/whowhenpro/whowhen_pro@14369dcb079c7cdf86ed2924145d5a28ff5c73b2",
     "httpx>=0.27",
     "numpy>=1.26",
+    "matplotlib>=3.8",
 ]
 
 [project.optional-dependencies]
-viz = ["matplotlib>=3.8"]
 dev = ["pytest>=8", "ruff>=0.6"]
 pilots = ["gradio_client>=1.0"]
 
