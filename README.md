@@ -17,10 +17,13 @@ total** (Jev bills input only; output tokens are free).
 |---|---|---|---|---|
 | **Jev (ours)** | **73.4** | **76.4** | **23.7** | **31.3** |
 | gpt-5.4 *(paper)* | 55.7 | 72.3 | 15.3 | 21.3 |
+| Claude Sonnet 4.6 *(paper)* | 54.9 | 69.8 | 19.1 | 22.4 |
+| GLM-5 *(paper)* | 54.9 | 71.1 | 22.2 | 25.3 |
+| Qwen3.5-122B *(paper)* | 57.5 | 73.9 | 17.0 | 21.6 |
 
-The like-for-like axis is **What** (error type over the same 17-code taxonomy both
-sides see): Jev **23.7 vs 15.3**. Jev also leads on joint accuracy (31.3 vs 21.3).
-Full numbers and CIs in [`RESULTS.md`](RESULTS.md). Baseline: gpt-5.4,
+The like-for-like axis is **What** (error type over the same 17-code taxonomy every
+model sees): Jev's **23.7** tops the field (next best 22.2). Jev also leads on joint
+accuracy. Full numbers and CIs in [`RESULTS.md`](RESULTS.md). Baselines:
 arXiv:2607.09996 Table 4.
 
 ## How it works
