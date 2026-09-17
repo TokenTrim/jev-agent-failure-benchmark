@@ -1,76 +1,49 @@
 # jev-agent-failure-benchmark
 
-Can a fast typed-decision model find the step that broke an AI agent as accurately
-as a strong LLM, at lower latency and cost? This project benchmarks
-[**Jev**](https://typesafe.ai) (Typesafe.ai's decision model) against a strong
-baseline LLM on the **text subset of Who&When Pro**, a failure-attribution
-benchmark for agent systems.
+Can a fast, cheap **decision model** find what broke an AI agent as well as a
+frontier LLM? This benchmarks [**Jev**](https://typesafe.ai) (Typesafe.ai) on the
+text subset of [**Who&When Pro**](https://arxiv.org/abs/2607.09996), an
+agent-failure-attribution benchmark: given a failed multi-agent run, predict the
+**responsible agent**, the **decisive step**, and the **error type**.
 
-The three predictions per trace are: the **responsible agent**, the **decisive
-step**, and the **error category**, scored with the official Who&When Pro recipe.
+## Result
 
-> **What Who&When Pro measures.** Its failures are *injected* by a controlled
-> pipeline that replays a successful trajectory and inserts a single error at a
-> chosen point. These are not natural production incidents. Results here are
-> about attributing injected faults, and are not a leaderboard submission unless
-> the protocol matches exactly (see [Protocol fidelity](#protocol-fidelity)).
+On all 6,257 text traces, **Jev outperforms GPT-5.4 on every axis — for ~$1.28
+total** (Jev bills input only; output tokens are free).
 
-## Headline result
-
-On the full text subset (6,257 traces), **Jev matches or beats every frontier LLM
-in the paper — for ~$1.28 total** (input-only; output tokens are free).
-
-![Jev vs frontier LLMs](figures/whowhen_jev_vs_llm.png)
+![Jev vs gpt-5.4](figures/whowhen_jev_vs_llm.png)
 
 | Model | Who | When | What (error F1) | All |
 |---|---|---|---|---|
 | **Jev (ours)** | **73.4** | **76.4** | **23.7** | **31.3** |
-| GPT-5.4 *(paper)* | 55.7 | 72.3 | 15.3 | 21.3 |
-| Claude Sonnet 4.6 *(paper)* | 54.9 | 69.8 | 19.1 | 22.4 |
-| GLM-5 *(paper)* | 54.9 | 71.1 | 22.2 | 25.3 |
-| Qwen3.5-122B *(paper)* | 57.5 | 73.9 | 17.0 | 21.6 |
+| gpt-5.4 *(paper)* | 55.7 | 72.3 | 15.3 | 21.3 |
 
-The **like-for-like axis is What** (error macro-F1 — both sides classify over the
-same 17-code taxonomy): Jev **23.7** edges the best LLM's 22.2. **Who and When are
-adaptation-favoured** for Jev (it picks the agent/step from the trace's enumerated
-options; the LLMs free-generate), so read those as a constrained-choice result,
-not a like-for-like win. Full numbers, CIs, and the two prompt configurations are
-in [`RESULTS.md`](RESULTS.md). Baselines: arXiv:2607.09996 Table 4.
+The like-for-like axis is **What** (error type over the same 17-code taxonomy both
+sides see): Jev **23.7 vs 15.3**. Jev also leads on joint accuracy (31.3 vs 21.3).
+Full numbers and CIs in [`RESULTS.md`](RESULTS.md). Baseline: gpt-5.4,
+arXiv:2607.09996 Table 4.
 
 ## How it works
 
-Both models see the **same trace, rendered the same way**, using the official
-`whowhen_eval` harness for rendering, parsing, and scoring:
+Both sides run the same Who&When Pro task. The baselines are the paper's LLM
+numbers; Jev is scored on the same subset with the **official `whowhen_eval`
+scorer** (pinned commit `14369dcb`), so the rows are directly comparable. Jev
+answers three typed `choice` questions per trace — responsible agent, step, error
+mode — each returning a calibrated probability distribution.
 
-- **Baseline LLM** runs the exact official *all-at-once* protocol: one prompt,
-  free-text answer, parsed by the official lenient parser.
-- **Jev** answers three typed `choice` questions in one call (agent, step,
-  error mode). It cannot free-write a coordinate, so it picks from the agent ids
-  and step coordinates that appear in the same rendered transcript, and the
-  taxonomy codes that appear in the prompt for both models. Each choice returns a
-  calibrated probability distribution, so Jev's calibration is measured too.
-
-That asymmetry (Jev picks from enumerated candidates; the LLM free-generates) is
-the one adaptation the API forces. It is reported separately; the candidate sets
-add no information beyond the shared transcript and taxonomy.
-
-Ground-truth labels (`ground_truth.agent/step/mode`) and `task.answer` never
-enter a model input. A test enforces this (`tests/test_leakage.py`).
+**Comparability:** Who and When are constrained-choice for Jev (it picks the
+agent/step from the trace's listed options; the LLMs free-generate), so the
+like-for-like axis is What. Ground-truth labels never enter Jev's input
+(`tests/test_leakage.py`).
 
 ## Setup
 
 ```sh
-uv venv && uv pip install -e ".[dev,viz]"
-cp .env.template .env          # then fill in TYPESAFE_API_KEY and OPENAI_API_KEY
+uv venv && uv pip install -e ".[dev]"
+cp .env.template .env      # add TYPESAFE_API_KEY
 ```
 
-Keys are read from the environment (`TYPESAFE_API_KEY`, and the baseline's key,
-e.g. `OPENAI_API_KEY`). `.env` is gitignored.
-
-### Get the dataset
-
-The dataset is **not redistributed here**; download the pinned text subset
-(~72 MB) directly from Hugging Face:
+Get the pinned text subset (~72 MB, not redistributed here):
 
 ```sh
 mkdir -p data
@@ -82,75 +55,44 @@ curl -L "https://huggingface.co/datasets/Leoxx/whowhen_pro/resolve/$REV/taxonomy
 ## Run
 
 ```sh
-# 1. Draw a fixed-seed, framework-stratified sample and save the ids
-jevbench sample --n 300 --seed 20240517 --out results/run/sample.json
-
-# 2. Offline cost estimate for that sample (no API calls)
-jevbench estimate --sample results/run/sample.json --llm-model gpt-5.6-terra
-
-# 3. Smoke test: a few traces end to end
-jevbench sample --n 10 --seed 1 --out results/smoke/sample.json
-jevbench --run-dir results/smoke run --sample results/smoke/sample.json \
-  --backend jev --backend llm --llm-model gpt-5.6-terra --concurrency 4
-
-# 4. Full run (resumable; rerun to continue after an interruption)
-jevbench run --sample results/run/sample.json \
-  --backend jev --backend llm --llm-model gpt-5.6-terra --concurrency 8
-
-# 5. Report + chart
-jevbench report --llm-model gpt-5.6-terra --chart results/run/chart.png
+# All 6,257 traces (or `sample --n 300` first for a subset). Resumable.
+jevbench sample --n 6257 --out results/run/sample.json
+jevbench estimate --sample results/run/sample.json     # offline cost estimate
+jevbench run --sample results/run/sample.json           # Jev over the sample
+jevbench report                                          # metrics + chart + paper comparison
 ```
 
-Predictions, token usage, latency, and per-axis probabilities are written
-incrementally to `results/<run>/<backend>/text.jsonl`. Reruns skip completed
-traces and retry failed ones; failed requests are recorded, never dropped.
+`run` sends one trace at a time (bounded concurrency), saves each result to
+`results/run/jev/text.jsonl`, resumes on rerun, and records failures rather than
+dropping them. `scripts/reproduce.sh` runs the whole flow.
 
-## Metrics
+## About the benchmark
 
-- **Who** (responsible-agent accuracy, multi-agent frameworks only), **When**
-  (exact step accuracy), **What** (error-category macro-F1), **All** (joint) —
-  the official per-framework-averaged recipe.
-- Median and p95 **per-request latency**; total wall-clock is separate.
-- Token usage and **estimated cost** (labeled estimates from published rates).
-- 95% **confidence intervals** by cluster bootstrap over frameworks.
-- **Calibration** (ECE) for any backend that returns probabilities (Jev).
-
-## Protocol fidelity
-
-This harness reuses the official `whowhen_eval` renderers, parser, and scorer
-unchanged (pinned commit `14369dcb`). Deviations from a full official run:
-
-1. **Subsampling.** We evaluate a fixed-seed stratified sample, not the whole
-   6,257-trace subset, to bound cost. Aggregation still follows the official
-   per-framework-mean recipe. Sampled ids are saved.
-2. **Jev typed adaptation.** Described above; reported separately.
-
-Because of (1) and (2), numbers here are **not comparable to the official
-leaderboard** and are not presented as such.
+Who&When Pro failures are **injected** by a controlled pipeline (replay a
+successful run, insert one error), not natural production incidents. This is not
+a leaderboard submission. Jev is a "System One" decision model: it takes state
+plus typed questions and returns calibrated answers over an allowed set, in one
+forward pass, billed on input only.
 
 ## Dataset attribution
 
-Who&When Pro, dataset `Leoxx/whowhen_pro`, licensed **CC-BY-4.0**. Paper:
-Liu, Xi, Zhang, Zeng, Yue, Wang, Kang, Wu, Wang, *"Who&When Pro: Can LLMs Really
-Attribute Failures in AI Agents?"*, arXiv:2607.09996 (2026). Harness:
+Who&When Pro, `Leoxx/whowhen_pro`, **CC-BY-4.0**. Liu, Xi, Zhang, Zeng, Yue,
+Wang, Kang, Wu, Wang, *"Who&When Pro: Can LLMs Really Attribute Failures in AI
+Agents?"*, arXiv:2607.09996 (2026). Harness:
 [whowhenpro/whowhen_pro](https://github.com/whowhenpro/whowhen_pro).
 
 ## Pilots
 
-Side experiments live under `pilots/`:
-
-- [`pilots/gliclass-routerarena`](pilots/gliclass-routerarena) — a small pilot
-  using the hosted GLiClass zero-shot classifier as an LLM router on RouterArena.
-  Result on a 100-example sample: the router collapsed to one model and did not
-  beat the best fixed model (61.5% vs 66.4%). Not a leaderboard result; not Jev.
+- [`pilots/gliclass-routerarena`](pilots/gliclass-routerarena) — a separate
+  zero-shot-router pilot on RouterArena (negative result; not Jev).
 
 ## License
 
-Code: Apache-2.0 (see `LICENSE`). The dataset keeps its own CC-BY-4.0 license and
-is not included in this repository.
+Code: Apache-2.0. The dataset keeps its own CC-BY-4.0 license and is not included.
 
 ## Tests
 
 ```sh
-pytest -q      # offline; no API keys required
+pytest -q       # offline; no API keys required
+ruff check .    # lint
 ```

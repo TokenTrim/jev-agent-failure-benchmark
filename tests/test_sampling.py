@@ -27,6 +27,14 @@ def test_floor_covers_every_framework():
     assert by_fw["smolagents"] >= 5
 
 
+def test_meets_requested_n_exactly():
+    ex = _examples()  # 135 rows across 3 frameworks
+    assert len(stratified_sample(ex, 60, seed=1, floor=5)) == 60
+    # n at/over the dataset size returns every id, not a rounded-down subset.
+    assert set(stratified_sample(ex, len(ex), seed=1, floor=5)) == {e.id for e in ex}
+    assert set(stratified_sample(ex, 10_000, seed=1, floor=5)) == {e.id for e in ex}
+
+
 def test_floor_capped_by_framework_size():
     ex = [Example(f"x_{i}", "x", "b", {}) for i in range(3)]
     ids = stratified_sample(ex, 10, seed=1, floor=20)

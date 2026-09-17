@@ -86,6 +86,13 @@ def stratified_sample(
             take = min(quota.get(fw, 0), len(pool))
             picked.update(rng.sample(pool, take))
 
+    # Fill any slots rounding left unallocated, so n (capped at the dataset size)
+    # is met exactly rather than short.
+    target = min(n, len(examples))
+    if len(picked) < target:
+        leftover = [ex.id for ex in examples if ex.id not in picked]
+        picked.update(rng.sample(leftover, target - len(picked)))
+
     return sorted(picked)
 
 
