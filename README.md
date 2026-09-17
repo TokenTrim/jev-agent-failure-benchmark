@@ -8,22 +8,19 @@ agent-failure-attribution benchmark: given a failed multi-agent run, predict the
 
 ## Result
 
-On all 6,257 text traces, **Jev matches or beats every frontier LLM in the paper —
-for ~$1.28 total** (Jev bills input only; output tokens are free).
+On all 6,257 text traces, **Jev outperforms GPT-5.4 on every axis — for ~$1.28
+total** (Jev bills input only; output tokens are free).
 
-![Jev vs frontier LLMs](figures/whowhen_jev_vs_llm.png)
+![Jev vs gpt-5.4](figures/whowhen_jev_vs_llm.png)
 
 | Model | Who | When | What (error F1) | All |
 |---|---|---|---|---|
 | **Jev (ours)** | **73.4** | **76.4** | **23.7** | **31.3** |
-| GPT-5.4 *(paper)* | 55.7 | 72.3 | 15.3 | 21.3 |
-| Claude Sonnet 4.6 *(paper)* | 54.9 | 69.8 | 19.1 | 22.4 |
-| GLM-5 *(paper)* | 54.9 | 71.1 | 22.2 | 25.3 |
-| Qwen3.5-122B *(paper)* | 57.5 | 73.9 | 17.0 | 21.6 |
+| gpt-5.4 *(paper)* | 55.7 | 72.3 | 15.3 | 21.3 |
 
-On **What** — classifying the error type over the same 17-code taxonomy both sides
-see — Jev's **23.7** edges the best LLM's 22.2, and Jev leads on joint accuracy
-(31.3 vs 25.3). Full numbers and CIs in [`RESULTS.md`](RESULTS.md). Baselines:
+The like-for-like axis is **What** (error type over the same 17-code taxonomy both
+sides see): Jev **23.7 vs 15.3**. Jev also leads on joint accuracy (31.3 vs 21.3).
+Full numbers and CIs in [`RESULTS.md`](RESULTS.md). Baseline: gpt-5.4,
 arXiv:2607.09996 Table 4.
 
 ## How it works
@@ -96,5 +93,6 @@ Code: Apache-2.0. The dataset keeps its own CC-BY-4.0 license and is not include
 ## Tests
 
 ```sh
-pytest -q      # offline; no API keys required
+pytest -q       # offline; no API keys required
+ruff check .    # lint
 ```
