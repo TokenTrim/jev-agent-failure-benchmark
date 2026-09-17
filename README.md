@@ -15,6 +15,28 @@ step**, and the **error category**, scored with the official Who&When Pro recipe
 > about attributing injected faults, and are not a leaderboard submission unless
 > the protocol matches exactly (see [Protocol fidelity](#protocol-fidelity)).
 
+## Headline result
+
+On the full text subset (6,257 traces), **Jev matches or beats every frontier LLM
+in the paper — for ~$1.28 total** (input-only; output tokens are free).
+
+![Jev vs frontier LLMs](figures/whowhen_jev_vs_llm.png)
+
+| Model | Who | When | What (error F1) | All |
+|---|---|---|---|---|
+| **Jev (ours)** | **73.4** | **76.4** | **23.7** | **31.3** |
+| GPT-5.4 *(paper)* | 55.7 | 72.3 | 15.3 | 21.3 |
+| Claude Sonnet 4.6 *(paper)* | 54.9 | 69.8 | 19.1 | 22.4 |
+| GLM-5 *(paper)* | 54.9 | 71.1 | 22.2 | 25.3 |
+| Qwen3.5-122B *(paper)* | 57.5 | 73.9 | 17.0 | 21.6 |
+
+The **like-for-like axis is What** (error macro-F1 — both sides classify over the
+same 17-code taxonomy): Jev **23.7** edges the best LLM's 22.2. **Who and When are
+adaptation-favoured** for Jev (it picks the agent/step from the trace's enumerated
+options; the LLMs free-generate), so read those as a constrained-choice result,
+not a like-for-like win. Full numbers, CIs, and the two prompt configurations are
+in [`RESULTS.md`](RESULTS.md). Baselines: arXiv:2607.09996 Table 4.
+
 ## How it works
 
 Both models see the **same trace, rendered the same way**, using the official

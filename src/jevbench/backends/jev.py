@@ -29,6 +29,16 @@ from .base import Prediction
 DEFAULT_ENDPOINT = "https://api.typesafe.ai/v1/systemone"
 _BLOCK_LINE = re.compile(r"^- (?P<code>\S+): \*\*(?P<name>.+?)\*\* - (?P<desc>.*)$")
 
+# Same task definition the official LLM prompt puts in its header, so Jev is
+# judged against the same framing the baselines get (a fairness fix, not a tuned
+# boost). Verbatim intent from whowhen_eval.prompts.all_at_once.
+_TASK_FRAMING = (
+    "You are an expert at diagnosing failures in agentic systems. The transcript below is an "
+    "agentic system that attempted to answer a user question and failed because of a decisive "
+    "error somewhere in the transcript. The first decisive error is the step that most directly "
+    "causes the system to go wrong and eventually produce an incorrect answer."
+)
+
 _AGENT_Q = "Which agent's turn first introduced the decisive error in this failed run?"
 _STEP_Q = "At which step coordinate did the first decisive error occur?"
 _MODE_Q = "Which taxonomy error mode best matches the first decisive error?"
@@ -47,8 +57,8 @@ def _mode_criteria(taxonomy: Taxonomy) -> dict[str, str | None]:
 
 
 def _state(problem: str, transcript: str) -> str:
-    """The shared case text: user question plus the rendered transcript."""
-    return f"## User Question\n\n{problem}\n\n## Transcript\n\n{transcript}"
+    """The shared case text: task framing, user question, then the transcript."""
+    return f"{_TASK_FRAMING}\n\n## User Question\n\n{problem}\n\n## Transcript\n\n{transcript}"
 
 
 class JevBackend:
